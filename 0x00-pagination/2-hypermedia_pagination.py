@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """ Implementing hypermedia pagination."""
 
-from typing import Tuple, List, Dict
+from typing import Tuple, List, Dict, Any
 import csv
 import math
 
@@ -59,20 +59,41 @@ class Server:
         start_index, end_index = index_range(page, page_size)
         dataset = self.dataset()
         return dataset[start_index: end_index]
-    
+
     def get_hyper(self, page: int = 1, page_size: int = 10) -> Dict[str, Any]:
         """
-        Return dataset as a dictionary
-        :param page:
-        :param page_size:
-        :return:
+        Return a paginated dataset as a dictionary with additional metadata.
+
+        Args:
+            page (int): The current page number (1-indexed).
+            page_size (int): The number of items per page.
+
+        Returns:
+            Dict[str, Any]: A dictionary containing:
+                - "page_size": Number of items per page.
+                - "page": Current page number.
+                - "data": List of items on the current page.
+                - "next_page": Next page number
+                                (or None if no next page).
+                - "prev_page": Previous page number
+                                (or None if no previous page).
+                - "total_pages": Total number of pages.
         """
-        total_pages = math.ceil(len(self.dataset()) / page_size)
+        # Assert input validity
+        assert isinstance(page, int) and page > 0
+        assert isinstance(page_size, int) and page_size > 0
+
+        # Calculate total number of pages
+        dataset = self.dataset()
+        total_items = len(dataset)
+        total_pages = math.ceil(total_items / page_size)
+
+        # Build the response dictionary
         return {
             "page_size": page_size,
             "page": page,
             "data": self.get_page(page, page_size),
-            "next_page": page + 1 if page + 1 <= total_pages else None,
+            "next_page": page + 1 if page < total_pages else None,
             "prev_page": page - 1 if page > 1 else None,
             "total_pages": total_pages
         }
