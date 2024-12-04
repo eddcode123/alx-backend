@@ -14,7 +14,7 @@ class BasicCache(BaseCaching):
             key (str): The key under which the item is stored.
             item (any): The item to store in the cache.
         """
-        if key is not None or item is not None:
+        if key and item:
             self.cache_data[key] = item
 
     def get(self, key):
