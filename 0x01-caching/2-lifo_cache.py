@@ -11,7 +11,7 @@ class LIFOCache(BaseCaching):
     def __init__(self):
         """Initialize the LIFOCache instance."""
         super().__init__()
-        self.key_orders = []
+        self.keys_order = []
 
     def put(self, key: str, item: Any):
         """ Add an item to the cache with LIFO policy
@@ -22,14 +22,15 @@ class LIFOCache(BaseCaching):
         """
         if key and item:
             if key in self.cache_data:
-                # If key already exists, update its value and move it to the end
+                # If key already exists, update
+                # its value and move it to the end
                 self.keys_order.remove(key)
             elif len(self.cache_data) >= self.MAX_ITEMS:
                 # Remove the last added key from the ordered list
-                last_key = self.keys_order.pop(-1)  # Remove last inserted key
+                last_key = self.keys_order.pop(-1)
                 self.cache_data.pop(last_key)
                 print(f"DISCARD: {last_key}")
-            
+
             # Add the new key-value pair
             self.cache_data[key] = item
             self.keys_order.append(key)
