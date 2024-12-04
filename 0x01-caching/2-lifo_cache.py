@@ -1,46 +1,40 @@
 #!/usr/bin/env python3
-"""
-LIFO Caching
-"""
+"""LIFO caching policy"""
 
-
-BaseCaching = __import__('base_caching').BaseCaching
+from base_caching import BaseCaching
+from typing import Any
 
 
 class LIFOCache(BaseCaching):
-    """
-    class LIFOCache that inherits from BaseCaching and is a caching system
-    """
-
+    """LIFOCache class inherits from BaseCaching
+    and implements a LIFO caching system"""
     def __init__(self):
-        """
-        init method
-        """
+        """Initialize the LIFOCache instance."""
         super().__init__()
-        self.key_indexes = []
 
-    def put(self, key, item):
-        """
-        Must assign to the dictionary self.cache_data
-        the item value for the key
+    def put(self, key: str, item: Any):
+        """ Add an item to the cache with LIFO policy
+
+        Args:
+            key (str): The key under which the item is stored.
+            item (Any): The item to store in the cache.
         """
         if key and item:
             if len(self.cache_data) >= self.MAX_ITEMS:
-                if key in self.cache_data:
-                    del self.cache_data[key]
-                    self.key_indexes.remove(key)
-                else:
-                    del self.cache_data[self.key_indexes[self.MAX_ITEMS - 1]]
-                    item_discarded = self.key_indexes.pop(self.MAX_ITEMS - 1)
-                    print("DISCARD:", item_discarded)
-
+                # Get the last added key (LIFO policy)
+                last_key = next(reversed(self.cache_data))
+                self.cache_data.pop(last_key)
+                print(f"DISCARD: {last_key}")
+            # Add the new key-value pair
             self.cache_data[key] = item
-            self.key_indexes.append(key)
 
     def get(self, key):
+        """Retrieve an item from the cache by key.
+
+        Args:
+            key (str): The key of the item to retrieve.
+
+        Returns:
+            The cached item, or None if the key is not in the cache or is None
         """
-        Must return the value in self.cache_data linked to key.
-        """
-        if key in self.cache_data:
-            return self.cache_data[key]
-        return None
+        return self.cache_data.get(key, None)
