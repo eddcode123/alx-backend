@@ -13,7 +13,7 @@ class LRUCache(BaseCaching):
         super().__init__()
         self.key_order = []
 
-    def put(self, key, item):
+    def put(self, key: str, item: Any):
         """ Add an item to the cache with LRU policy
 
         Args:
