@@ -1,52 +1,49 @@
 #!/usr/bin/env python3
-"""
-MRU Caching
-"""
+"""MRU caching policy"""
 
-
-from collections import OrderedDict
-
-
-BaseCaching = __import__('base_caching').BaseCaching
+from base_caching import BaseCaching
+from typing import Union, Any
 
 
 class MRUCache(BaseCaching):
-    """
-    class MRUCache that inherits
-    from BaseCaching and is a caching system
-    """
+    """MRUCache inherits from BaseCaching
+    and implements a LRu caching system"""
 
     def __init__(self):
         super().__init__()
-        self.mru_order = OrderedDict()
+        self.key_order = []
 
-    def put(self, key, item):
+    def put(self, key: str, item: Any):
+        """ Add an item to the cache with MRU policy
+
+        Args:
+            key (str): The key under which the item is stored.
+            item (Any): The item to store in the cache.
         """
-        Must assign to the dictionary
-        self.cache_data the item value for the key key
-        """
-        if not key or not item:
-            return
+        if key and item:
+            # check if key exist in key_order
+            if key in self.key_order:
+                # remove key from key _order
+                self.key_order.remove(key)
+            elif len(self.cache_data) >= self.MAX_ITEMS:
+                # if cache is full free memory
+                mru_key = self.key_order.pop(-1)
+                print(f"DISCARD: {mru_key}")
+                self.cache_data.pop(mru_key)
+            self.cache_data[key] = item
+            self.key_order.append(key)
 
-        self.cache_data[key] = item
-        self.mru_order[key] = item
+    def get(self, key: str) -> Union[Any, None]:
+        """Retrieve an item from the cache by key.
 
-        if len(self.cache_data) > BaseCaching.MAX_ITEMS:
-            item_discarded = next(iter(self.mru_order))
-            del self.cache_data[item_discarded]
-            print("DISCARD:", item_discarded)
+        Args:
+            key (str): The key of the item to retrieve.
 
-        if len(self.mru_order) > BaseCaching.MAX_ITEMS:
-            self.mru_order.popitem(last=False)
-
-        self.mru_order.move_to_end(key, False)
-
-    def get(self, key):
-        """
-        Must return the value in
-        self.cache_data linked to key.
+        Returns:
+            The cached item, or None if the key is not in the cache or is None
         """
         if key in self.cache_data:
-            self.mru_order.move_to_end(key, False)
+            self.key_order.remove(key)
+            self.key_order.append(key)
             return self.cache_data[key]
         return None
