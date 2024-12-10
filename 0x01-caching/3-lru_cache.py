@@ -43,7 +43,7 @@ class LRUCache(BaseCaching):
             The cached item, or None if the key is not in the cache or is None
         """
         if key in self.cache_data:
-            self.key_order.remove[key]
-            self.key_order.append[key]
+            self.key_order.remove(key)
+            self.key_order.append(key)
             return self.cache_data[key]
         return None
