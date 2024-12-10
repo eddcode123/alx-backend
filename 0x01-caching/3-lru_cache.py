@@ -1,51 +1,45 @@
 #!/usr/bin/env python3
-"""
-LRU Caching
-"""
+"""LRU caching policy"""
 
-
-from lib2to3.pgen2.token import BACKQUOTE
-from typing import OrderedDict
-
-
-BaseCaching = __import__('base_caching').BaseCaching
+from base_caching import BaseCaching
+from typing import Union, Any
 
 
 class LRUCache(BaseCaching):
-    """
-    class LRUCache that inherits from BaseCaching and is a caching system
-    """
+    """LRUCache inherits from BaseCaching
+    and implements a LRu caching system"""
 
     def __init__(self):
-        """"
-        Init method
-        """
         super().__init__()
-        self.lru_order = OrderedDict()
+        self.key_order = []
 
     def put(self, key, item):
-        """
-        Must assign to the dictionary self.cache_data
-        the item value for the key
+        """ Add an item to the cache with LRU policy
+
+        Args:
+            key (str): The key under which the item is stored.
+            item (Any): The item to store in the cache.
         """
         if key and item:
-            self.lru_order[key] = item
-            self.lru_order.move_to_end(key)
+            # check if key exist in key_order
+            if key in self.key_order:
+                # remove key from key _order
+                self.key_order.remove(key)
+            elif len(self.cache_data) >= self.MAX_ITEMS:
+                # if cache is full free memory
+                lru_key = self.key_order.pop(0)
+                print(f"DISCARD: {lru_key}")
+                self.cache_data.pop(lru_key)
             self.cache_data[key] = item
+            self.key_order.append(key)
 
-        if len(self.cache_data) > BaseCaching.MAX_ITEMS:
-            item_discarded = next(iter(self.lru_order))
-            del self.cache_data[item_discarded]
-            print("DISCARD:", item_discarded)
+    def get(self, key: str) -> Union[Any, None]:
+        """Retrieve an item from the cache by key.
 
-        if len(self.lru_order) > BaseCaching.MAX_ITEMS:
-            self.lru_order.popitem(last=False)
+        Args:
+            key (str): The key of the item to retrieve.
 
-    def get(self, key):
+        Returns:
+            The cached item, or None if the key is not in the cache or is None
         """
-        Must return the value in self.cache_data linked to key
-        """
-        if key in self.cache_data:
-            self.lru_order.move_to_end(key)
-            return self.cache_data[key]
-        return None
+        return self.cache_data.get(key, None)
