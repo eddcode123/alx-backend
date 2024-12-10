@@ -1,45 +1,66 @@
 #!/usr/bin/env python3
-"""
-caching System
-"""
+"""LFU cache policy"""
 
 from base_caching import BaseCaching
+from typing import Union, Any
 
 
 class LFUCache(BaseCaching):
+    """LFUCache class inherits from BaseCaching
+    and implements a LFU caching system
     """
-    caching system:
-
-    Args:
-        LFUCache ([class]): [basic caching]
-    """
-
-    def __init__(self) -> None:
-        """ initialize of class """
-        self.temp_list = {}
+    def __init__(self):
         super().__init__()
+        self.frequency_and_key_order = {}
 
-    def put(self, key, item):
+    def put(self, key: str, item: Any):
         """
-        Add an item in the cache
+        Add an item to the cache with LFU policy
+
+        Args:
+            key (str): The key under which the item is stored.
+            item (Any): The item to store in the cache.
         """
-        if not (key is None or item is None):
+        if key is None or item is None:
+            return
+
+        if key in self.cache_data:
+            # If the key exists, update the item and frequency
             self.cache_data[key] = item
-            if len(self.cache_data.keys()) > self.MAX_ITEMS:
-                pop = min(self.temp_list, key=self.temp_list.get)
-                self.temp_list.pop(pop)
-                self.cache_data.pop(pop)
-                print(f"DISCARD: {pop}")
-            if not (key in self.temp_list):
-                self.temp_list[key] = 0
-            else:
-                self.temp_list[key] += 1
+            self.frequency_and_key_order[key] += 1
+        else:
+            # If the key doesn't exist and the cache is full, evict an item
+            if len(self.cache_data) >= self.MAX_ITEMS:
+                # Find the least frequently used item(s)
+                min_freq = min(self.frequency_and_key_order.values())
+                lfu_keys = [
+                    k
+                    for k, v in self.frequency_and_key_order.items()
+                    if v == min_freq
+                    ]
 
-    def get(self, key):
+                # Evict the least recently used among LFU items
+                key_to_evict = lfu_keys[0]
+                del self.cache_data[key_to_evict]
+                del self.frequency_and_key_order[key_to_evict]
+                print(f"DISCARD: {key_to_evict}")
+
+            # Add the new key and set frequency to 1
+            self.cache_data[key] = item
+            self.frequency_and_key_order[key] = 1
+
+    def get(self, key: str) -> Union[Any, None]:
+        """Retrieve an item from the cache by key.
+
+        Args:
+            key (str): The key of the item to retrieve.
+
+        Returns:
+            The cached item, or None if the key is not in the cache or is None
         """
-        Get an item by key
-        """
-        if (key is None) or not (key in self.cache_data):
+        if key is None or key not in self.cache_data:
             return None
-        self.temp_list[key] += 1
-        return self.cache_data.get(key)
+
+        # Increment frequency count for the accessed key
+        self.frequency_and_key_order[key] += 1
+        return self.cache_data[key]
